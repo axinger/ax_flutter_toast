@@ -1,4 +1,3 @@
-
 import 'package:ax_flutter_toast/src/toast_circle.dart';
 import 'package:flutter/material.dart';
 
@@ -6,41 +5,81 @@ import 'toast_content.dart';
 
 const double kIconSize = 50;
 const Duration kDuration = const Duration(milliseconds: 150);
-const Duration kPopDuration = const Duration(seconds: 2);
+const Duration kDismissDuration = const Duration(seconds: 2);
+
+typedef CallBack = Function();
 
 class Toast {
   BuildContext _context;
 
+  OverlayEntry _overlayEntry;
   ValueNotifier<double> _loadingProgressNotifier = ValueNotifier<double>(0);
 
-  /// 显示 指定内容 2秒后消失
-  static Future<T> showToast<T>({@required context, Widget child}) {
-    return showDismissibleOfOverlayState(
+  /// 显示 toast
+  Toast.showToast({
+    @required BuildContext context,
+    Widget child,
+    bool autoDismiss = true,
+    Duration dismissDuration = kDismissDuration,
+    CallBack callBack,
+  }) {
+    _context = context;
+    _showDismissibleOfOverlayState(
       context: context,
       children: [child],
+      autoDismiss: autoDismiss,
+      dismissDuration: dismissDuration,
+      callBack: callBack,
     );
   }
 
+  /// 移除 toast
+  void dismissToast() {
+    if ((Overlay.of(_context) != null) && (_overlayEntry != null)) {
+      try {
+        _overlayEntry?.remove();
+      } catch (e) {}
+    }
+  }
+
   /// 显示 √ 2秒后消失
-  static Future<T> success<T>({@required context}) {
-    return showToast(
+  Toast.success({
+    @required BuildContext context,
+    Duration dismissDuration,
+    CallBack callBack,
+  }) {
+    Toast.showToast(
       context: context,
+      callBack: callBack,
+      dismissDuration: dismissDuration,
       child: _icon(Icons.check_circle),
     );
   }
 
   /// 显示 × 2秒后消失
-  static Future<T> failure<T>({@required context}) {
-    return showToast(
+  Toast.failure({
+    @required BuildContext context,
+    CallBack callBack,
+    Duration dismissDuration,
+  }) {
+    Toast.showToast(
       context: context,
+      callBack: callBack,
+      dismissDuration: dismissDuration,
       child: _icon(Icons.cancel),
     );
   }
 
   /// 显示 ! 2秒后消失
-  static Future<T> error<T>({@required context}) {
-    return showToast(
+  Toast.error({
+    @required BuildContext context,
+    CallBack callBack,
+    Duration dismissDuration = kDismissDuration,
+  }) {
+    Toast.showToast(
       context: context,
+      callBack: callBack,
+      dismissDuration: dismissDuration,
       child: _icon(Icons.error),
     );
   }
@@ -88,11 +127,16 @@ class Toast {
   }
 
   ///使用[OverlayState] 创建 层级最高(除iOS键盘),不影响子页面交互,用于toast 较好
-  static Future<T> showDismissibleOfOverlayState<T>({
+  _showDismissibleOfOverlayState({
     @required BuildContext context,
     List<Widget> children,
+    bool autoDismiss = true,
+    Duration dismissDuration = kDismissDuration,
+    CallBack callBack,
   }) {
-    OverlayEntry _overlayEntry = OverlayEntry(
+    ///先强制移除一下
+    dismissToast();
+    _overlayEntry = OverlayEntry(
         maintainState: true,
         builder: (BuildContext context) {
           return ToastContent(
@@ -100,11 +144,17 @@ class Toast {
           );
         });
 
-    Overlay.of(context).insert(_overlayEntry);
+    OverlayState overlayState = Overlay.of(context);
+    overlayState.insert(_overlayEntry);
 
-    return Future.delayed(kPopDuration).whenComplete(() {
-      _overlayEntry.remove();
-    });
+    if (autoDismiss == true) {
+      Future.delayed(dismissDuration).whenComplete(() {
+        dismissToast();
+        if (callBack != null) {
+          callBack();
+        }
+      });
+    }
   }
 
   /// * 使用 [showGeneralDialog] 方式创建,影响子页面交互,但会强制收起键盘,是通过 push方式
@@ -115,7 +165,7 @@ class Toast {
       barrierDismissible: false,
       children: children,
     );
-    return Future.delayed(kPopDuration).whenComplete(() {
+    return Future.delayed(kDismissDuration).whenComplete(() {
       Navigator.pop(context);
     });
   }
