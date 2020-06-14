@@ -100,12 +100,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   toast.dismissToast();
                 });
               }),
-              _flatButton("Toast.dismissToast-1", () {}),
-              _flatButton("Toast.dismissToast-2", () {}),
+
               _flatButton("Toast.loading", () {
                 Toast toast = Toast.loading(context: context);
                 double current = 0;
-                Timer.periodic(Duration(milliseconds: 500), (timer) {
+                Timer.periodic(Duration(milliseconds: 100), (timer) {
                   current += 1;
                   var progress = current / 100;
                   print('progress= $progress');

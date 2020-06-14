@@ -184,12 +184,12 @@ class Toast {
 
   ///[barrierColor] 背景色
   ///[barrierDismissible]是否点击空白消失
-  static Future<T> _showDialog<T>(
+  static _showDialog(
       {@required context,
       Color barrierColor,
       bool barrierDismissible,
       List<Widget> children}) {
-    return showGeneralDialog(
+    showGeneralDialog(
       context: context,
       barrierDismissible: barrierDismissible,
       barrierColor: barrierColor,
@@ -197,8 +197,13 @@ class Toast {
       transitionDuration: kDuration,
       pageBuilder: (BuildContext context, Animation animation,
           Animation secondaryAnimation) {
-        return ToastContent(
-          children: children,
+        return WillPopScope(
+          onWillPop: () async {
+            return false;
+          },
+          child: ToastContent(
+            children: children,
+          ),
         );
       },
     );
