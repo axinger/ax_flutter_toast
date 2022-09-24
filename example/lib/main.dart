@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:ax_flutter_toast/ax_flutter_toast.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -32,11 +31,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   _flatButton(String text, VoidCallback callback) {
-    return FlatButton(
+    return TextButton(
       child: Text(text),
-      splashColor: Colors.red,
-      color: Colors.green,
-      textColor: Colors.white,
+      // splashColor: Colors.red,
+      // color: Colors.green,
+      // textColor: Colors.white,
       onPressed: callback,
     );
   }
